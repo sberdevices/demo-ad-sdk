@@ -1,0 +1,28 @@
+{
+  "name": "demo-video-sdk",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "node -r dotenv/config $(which webpack)",
+    "prestart": "npm run build",
+    "start": "http-server",
+    "start:scenario": "PORT=5000 node server/scenario.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@salutejs/storage-adapter-memory": "^0.18.0",
+    "concurrently": "^6.2.1",
+    "dotenv": "^10.0.0",
+    "http-server": "^13.0.2",
+    "webpack": "^5.54.0",
+    "webpack-cli": "^4.8.0"
+  },
+  "dependencies": {
+    "@salutejs/scenario": "^0.18.0",
+    "@sberdevices/assistant-client": "^4.5.0",
+    "express": "^4.17.1",
+    "uuid": "^8.3.2"
+  }
+}
