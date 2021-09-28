@@ -1,17 +1,18 @@
 
 const { createAssistant, createSmartappDebugger } = window.assistant;
 
-const { SberDevicesVideoAdSDK } = window.SberDevicesVideoAdSDK;
+const { init, run } = window.SberDevicesVideoAdSDK;
 
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 const DEV_TOKEN = process.env.DEV_TOKEN;
 const DEV_PHRASE = process.env.DEV_PHRASE;
 
-const { init, run } = SberDevicesVideoAdSDK;
-
+const assistantState = {};
 const initializeAssistant = () => {
     if (!IS_DEVELOPMENT) {
-        return createAssistant();
+        return createAssistant({
+            getState: () => assistantState,
+        });
     }
 
     if (!DEV_TOKEN || !DEV_PHRASE) {
@@ -21,6 +22,7 @@ const initializeAssistant = () => {
     return createSmartappDebugger({
         token: DEV_TOKEN,
         initPhrase: DEV_PHRASE,
+        getState: () => assistantState,
     });
 };
 
