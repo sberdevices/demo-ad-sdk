@@ -1,6 +1,6 @@
 {
   "name": "demo-video-sdk",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Demo of SberDevices Video Ad SDK",
   "scripts": {
     "build": "NODE_ENV='production' node -r dotenv/config $(which webpack)",
