@@ -1,5 +1,5 @@
 
-const { init, initDev, runVideoAd } = window.SberDevicesAdSDK;
+const { init, initDev, runVideoAd, runBanner } = window.SberDevicesAdSDK;
 
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 const DEV_TOKEN = process.env.DEV_TOKEN;
@@ -7,7 +7,7 @@ const DEV_PHRASE = process.env.DEV_PHRASE;
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const testBtn = document.querySelector('.btn');
+    const testBtn = document.querySelector('.video-ad-btn');
     testBtn.disabled = true;
 
     const onSuccess = () => {
@@ -37,4 +37,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    initBannerButton();
+
 });
+
+function initBannerButton() {
+    const testBtn = document.querySelector('.banner-ad-btn');
+
+    testBtn.addEventListener('click', () => {
+        runBanner({
+            onSuccess: () => {
+                console.log('Success');
+            },
+            onError: (err) => {
+                console.error('AdSDK Error', err);
+            },
+        });
+    });
+}
