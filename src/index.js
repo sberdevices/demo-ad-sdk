@@ -28,7 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const text = testBtn.textContent;
 
     testBtn.addEventListener('click', () => {
+        const muteVideo = document.getElementById('mute-video-ad').checked;
         runVideoAd({
+            mute: muteVideo,
             onSuccess: () => {
                 console.log('Success');
                 testBtn.textContent = text + ': watched ' + i++;
