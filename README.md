@@ -46,8 +46,10 @@
 #### init()
 
 ```js
-window.SberDevicesAdSDK.init({ onError, onSuccess })
+window.SberDevicesAdSDK.init({ onError, onSuccess, test })
 ```
+
+`test` - необязательный параметр. Если он равен `true`, то видео-реклама и баннеры будут выводиться тестовые.Нужно для тестирования при разработке, у пользователей должен отсутствовать или равен `false`.
 
 После успешной инициализации вызовется `onSuccess`; После чего можно [запустить рекламу](#Запуск_рекламы)
 
@@ -71,9 +73,9 @@ const DEV_TOKEN = process.env.DEV_TOKEN;
 const DEV_PHRASE = process.env.DEV_PHRASE;
 
 if (IS_DEVELOPMENT) {
-    window.SberDevicesAdSDK.initDev({ token: DEV_TOKEN, initPhrase: DEV_PHRASE, onSuccess, onError });
+    window.SberDevicesAdSDK.initDev({ token: DEV_TOKEN, initPhrase: DEV_PHRASE, onSuccess, onError, test });
 } else {
-    window.SberDevicesAdSDK.init({ onSuccess, onError });
+    window.SberDevicesAdSDK.init({ onSuccess, onError, test });
 }
 ```
 
