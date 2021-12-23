@@ -1,26 +1,32 @@
 
 # SberDevices Ad SDK
 
-Показывающий код SberDevices
+* [Создание смартапа](#создание-смартапа)
+* [Установка Ad SDK](#установка-ad-sdk)
+* [Использование](#использование)
+* [Инициализация](#инициализация)
+* [Альтернативные способы инициализации](#альтернативные-способы-инициализации)
+* [Запуск демо проекта](#запуск-демо-проекта)
 
 ## Создание смартапа
 
-Создайте проект в [SmartApp Studio](https://developers.sber.ru/docs/ru/salute/studio/project/create)
+Создайте проект в [SmartApp Studio](https://developers.sber.ru/docs/ru/salute/studio/project/create):
 
-В качестве Webhook смартапа укажите либо готовый webhook: `https://smartapp-code.sberdevices.ru/chatadapter/chatapi/webhook/sber_nlp2/akvMhQEy:73931a63e07450a5260600c7f9f6e6d6a992578b`
-Либо собственный веб-хук который будет присылать данные для инициализации по [данному](./api/hook.js) примеру;
+1. В качестве Хостинг фронтенда укажите ссылку на свой клиентский код.
+2. Укажите Webhook.
 
-В качестве Хостинг фронтенда укажите ссылку на свой клиентский код;
+> **ВАЖНО:** Для работы рекламы необходим виртуальный ассистент, для получения данных о пользователе, **Webhook для смартапа обязателен**.
 
-Подключите `SberDevices Ad SDK` к клиентской части вашего приложения.
+Можно использовать готовый webhook: `https://smartapp-code.sberdevices.ru/chatadapter/chatapi/webhook/sber_nlp2/akvMhQEy:73931a63e07450a5260600c7f9f6e6d6a992578b`
 
-
+Либо собственный webhook, который будет присылать данные для инициализации по [данному](./api/hook.js) примеру;
 
 ## Установка Ad SDK
 
 Подключите [assistantClient](https://github.com/sberdevices/assistant-client#%D0%B0%D0%BB%D1%8C%D1%82%D0%B5%D1%80%D0%BD%D0%B0%D1%82%D0%B8%D0%B2%D0%BD%D0%BE%D0%B5-%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B5%D0%BD%D0%B8%D0%B5)
+> **ВАЖНО:** `assistantClient` обязательно должен быть подключен до инициализации `AD-SDK`.
 
-Подключите показывающий код через тег script в ваше приложение:
+Подключите AD-SDK через тег `<script>` в ваше приложение:
 
 ```html
     <script src="https://cdn-app.sberdevices.ru/shared-static/0.0.0/js/@sberdevices/ad-sdk/ad-sdk.min.js"></script>
@@ -28,45 +34,101 @@
 
 ## Использование
 
-После загрузки скрипта вам будет доступен объект `window.SberDevicesAdSDK`;
-У этого объекта есть три основных метода:
+Два шага:
+1. Инициализация - sdk получит данные о пользователе через `assistantClient`. Инициализация должна быть завершена до первого вызова любого вида рекламы.
+2. Запуск баннера или видеорекламы.
 
-- `init()`
-- `runVideoAd()`
-- `runBanner()`
 
-### Инициализация
+### Инициализация sdk:
+```js
+window.SberDevicesAdSDK.init({ 
+    onSuccess: () => {}, // Будет вызвана при окончании инициализации
+    onError: (err) => {}, // Будет вызвана, если при инициализации произойдет ошибка
+    test: false, // true - Будет выводиться тестовая реклама, false - будет выводиться реальная реклама
+})
+```
+[Подробнее об инициализации](#инициализация)
 
-*NB* Для корректной инициализации показывающего кода, необходимо подключить assistantClient до инициализации SberDevicesAdSDK.
+[Альтернативные способы инициализации](#альтернативные-способы-инициализации)
+
+### Запуск баннера:
+```js
+window.SberDevicesAdSDK.runBanner({
+    onSuccess: () => {}, // Будет вызвана при закрытии баннера
+    onError: (err) => {}, // Будет вызвана в случае ошибки при показе баннера
+});
+```
+### Запуск видео-рекламы:
+```js
+window.SberDevicesAdSDK.runVideoAd({
+    onSuccess: () => {}, // Вызовется при переходе или при полном показе рекламы
+    onError: (err) => {}, // Вызовется во время ошибки при показе рекламы
+    mute: true, // Вызвать рекламу без звука
+});
+```
+
+[Пример запуска видео-рекламы и баннера](./src/index.js)
+
+
+## Инициализация
+
+> **ВАЖНО:** Для корректной работы, необходимо подключить assistantClient **до инициализации SberDevicesAdSDK**. Если в момент инициализации assistant будет отсутствовать, то произойдет ошибка и SberDevicesAdSDK не будет инициализирован.
 
 `SberDevicesAdSDK` имеет несколько вариантов инициализации:
 
-Самый простой способ инициализации:
+Если вы не используете `assistantClient`:
+* `window.SberDevicesAdSDK.init({ onSuccess, onError, test })` - Все параметры являются необязательными;
 
-#### init()
+Для запуска локально в браузере:
+* `window.SberDevicesAdSDK.initDev({ token, initPhrase, onSuccess, onError, test })`;
+
+Если вы используете `assistantClient`:
+* `window.SberDevicesAdSDK.initWithAssistant({assistant, onSuccess, onError}, test)`;
+* `window.SberDevicesAdSDK.initWithParams({params, onSuccess, onError}, test)`;
+
+Проверить завершилась ли инициализация можно вызвав:
+
+`window.SberDevicesAdSDK.isInited()` - вернет `true` если инициализация завершена, `false` - если инициализация не завершена
+
+### window.SberDevicesAdSDK.init()
+
+Самый простой способ инициализации
 
 ```js
 window.SberDevicesAdSDK.init({ onError, onSuccess, test })
 ```
+* `onSuccess` - необязательный параметр. Функция, будет вызвана при окончании инициализации.
+* `onError` - необязательный параметр. Функция, будет вызвана, если при инициализации произойдет ошибка.
+* `test` - необязательный параметр. Если он равен `true`, то видео-реклама и баннеры будут выводиться тестовые, нужно для тестирования при разработке. У пользователей должен отсутствовать или равен `false`.
 
-`test` - необязательный параметр. Если он равен `true`, то видео-реклама и баннеры будут выводиться тестовые.Нужно для тестирования при разработке, у пользователей должен отсутствовать или равен `false`.
+[Запустить рекламу](#Запуск_рекламы) можно только после успешной инициализации, после вызова `onSuccess`. Если вызвать рекламу раньше, произойдет ошибка.
 
-После успешной инициализации вызовется `onSuccess`; После чего можно [запустить рекламу](#Запуск_рекламы)
+Проверить, закончилась ли инициализация, можно через вызов `window.SberDevicesAdSDK.isInited()`;
 
-Также можно проверить инициализацию вызвав метод `window.SberDevicesAdSDK.isInited()`;
+> **ВАЖНО:** Для корректной работы, необходимо подключить assistantClient **до инициализации SberDevicesAdSDK**. Если в момент инициализации assistant будет отсутствовать, то произойдет ошибка и SberDevicesAdSDK не будет инициализирован.
 
-**NB** метод `SberDevicesAdSDK.init` предполагает что ваше приложение запущено в окружении с поддержкой голосового Ассистента;
+[Пример инициализации](./src/index.js)
 
-Пример использования этого метода можно посмотреть в [данном Демо-проекте](./src/index.js)
+### window.SberDevicesAdSDK.initDev()
 
-#### initDev()
+`init()` нужно запускать на устройствах в production среде, где панель ассистента сразу присутствует.
 
-Метод `window.SberDevicesAdSDK.initDev` предназначен только для локальной отладки, он работает также как метод `init` но принимает два дополнительных параметра: `token`, `initPhrase`;
-
-`initPhrase` – Фраза для запуска вашего смартап, строится следующим образом `Запусти + Активационное имя (Запусти мой апп)`; Пример: `Запусти кубик Рубика`
-`token` – Токен для дебага, получить его можно в SmartApp Studio по [инструкции](https://developers.sber.ru/docs/ru/salute/assistant-client/overview#%D0%B0%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F-%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%BE%D0%B2).
+`initDev()` нужно запускать при отладке в браузере. Этот метод перед инициализацией будет добавлять голосовой ассистент в браузер, в котором ассистена изначально нет.
 
 
+```js
+window.SberDevicesAdSDK.initDev({ token, initPhrase, onSuccess, onError, test });
+```
+* `initPhrase` – Фраза для запуска вашего смартап `Запусти + Активационное имя смартапа`; Пример: `Запусти кубик Рубика`
+* `token` – Токен для дебага, получить его можно в SmartApp Studio по [инструкции](https://developers.sber.ru/docs/ru/salute/assistant-client/overview#%D0%B0%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F-%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%BE%D0%B2).
+* `onSuccess` - необязательный параметр. Функция, будет вызвана при окончании инициализации.
+* `onError` - необязательный параметр. Функция, будет вызвана, если при инициализации произойдет ошибка.
+* `test` - необязательный параметр. Если он равен `true`, то видео-реклама и баннеры будут выводиться тестовые, нужно для тестирования при разработке. У пользователей должен отсутствовать или равен `false`.
+
+Метод `window.SberDevicesAdSDK.initDev()` предназначен только для локальной отладки в браузере. Перед инициализацией он создаст assistant через [createSmartappDebugger](https://github.com/sberdevices/assistant-client#createSmartappDebugger). Он работает также как метод `init` но принимает два дополнительных параметра: `token`, `initPhrase`;
+
+
+Можно в dev режиме автоматически запускать `initDev`, а в prod режиме `init`:
 ```js
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 const DEV_TOKEN = process.env.DEV_TOKEN;
@@ -79,39 +141,51 @@ if (IS_DEVELOPMENT) {
 }
 ```
 
-Пример использования этого метода можно посмотреть в [данном Демо-проекте](./src/index.js)
+Пример использования этого метода можно посмотреть в [Демо-проекте](./src/index.js)
 
-#### initWithAssistant()
+## Альтернативные способы инициализации
+### window.SberDevicesAdSDK.initWithAssistant()
 
 Если вы хотите контролировать создание assistantClient самостоятельно, и например подписаться на [смену персонажей](https://github.com/sberdevices/assistant-client#AssistantCharacterCommand);
-То создайте инстанс a и передайте его в метод `window.SberDevicesAdSDK.initWithAssistant()`;
+То создайте инстанс `assistantClient` a и передайте его в метод `window.SberDevicesAdSDK.initWithAssistant()`;
 
 
 ```js
-    const assistant = initializeAssistant();
+    import { createAssistant } from '@sberdevices/assistant-client';
+
+    const assistant = createAssistant();
 
     initWithAssistant({
         assistant,
         onSuccess,
         onError,
-    });
+    }, test );
 ```
+* `assistant` - инстанс ассистента.
+* `onSuccess` - необязательный параметр. Функция, будет вызвана при окончании инициализации.
+* `onError` - необязательный параметр. Функция, будет вызвана, если при инициализации произойдет ошибка.
+* `test` - необязательный параметр. Если он равен `true`, то видео-реклама и баннеры будут выводиться тестовые, нужно для тестирования при разработке. У пользователей должен отсутствовать или равен `false`.
 
 Пример создания `assistant` можно посмотреть в [документации](https://github.com/sberdevices/assistant-client#%D0%BF%D1%80%D0%B8%D0%BC%D0%B5%D1%80-%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F);
 
-Пример использования метода `initWithAssistant` можно посмотреть в [данном Демо-проекте](./src/initWithAssistant.js)
+Для локальной отладки в браузере (как в `window.SberDevicesAdSDK.initDev`), вместо
+```js
+import { createAssistant } from '@sberdevices/assistant-client';
 
-*NB* – При таком методе инициализации `SberDevicesAdSDK` рассчитывает что в качестве webhook указан готовый webhook либо сценарий отправляет все необходимые данные на старте. [Пример такого сценария](./api/hook.js) можно посмотреть в данном репозитории.
+const assistant = createAssistant();
+```
+ можно использовать
+```js
+import { createSmartappDebugger } from '@sberdevices/assistant-client';
 
+const assistant = createSmartappDebugger();
+```
 
-#### initWithParams()
+Пример использования метода `initWithAssistant` можно посмотреть в [Демо-проекте](./src/initWithAssistant.js)
 
-Если вы хотите написать свой собственный сценарий и использовать его в качестве веб-хука, возьмите за основу [пример такого сценария](./api/hook.js)
-Пример написан с использованием фреймворка [SaluteJS](https://github.com/sberdevices/salutejs)
-Вы можете написать сценарий с использованием любого другого [инструмента](https://developers.sber.ru/docs/ru/salute/overview#%D0%B8%D0%BD%D1%81%D1%82%D1%80%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D1%8B)
+### window.SberDevicesAdSDK.initWithParams()
 
-Инициализируйте [AssistantClient](https://github.com/sberdevices/assistant-client#%D0%BF%D1%80%D0%B8%D0%BC%D0%B5%D1%80-%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F)
-Подпишитесь на получения необходимых данных и после получения инициализируйте SberDevicesAdSDK
+Так же инициализировать SberDevicesAdSDK можно передав самостоятельно все необходимые параметры из `assistantClient`.
 
 ```js
     assistant.on('data', (command) => {
@@ -123,56 +197,64 @@ if (IS_DEVELOPMENT) {
                     testBtn.disabled = false;
                 },
                 onError, 
-            });
+            }, test);
         }
     });
 ```
 
-**NB** `smart_app_data.type` отправленный на сценарии должен быть такой-же, который вы ожидаете в подписке `assistant.on('data', ...)`
+* `params` - параметры для инициализации.
+* `onSuccess` - необязательный параметр. Функция, будет вызвана при окончании инициализации.
+* `onError` - необязательный параметр. Функция, будет вызвана, если при инициализации произойдет ошибка.
+* `test` - необязательный параметр. Если он равен `true`, то видео-реклама и баннеры будут выводиться тестовые, нужно для тестирования при разработке. У пользователей должен отсутствовать или равен `false`.
 
-Параметры которые ожидает метод `window.SberDevicesAdSDK.initWithParams()`:
 
+Пример `params`, который ожидает метод `window.SberDevicesAdSDK.initWithParams()`.
+Обязательное отмечено `*`, но передавать лучше всё во избежание проблем в дальнейшем.
 ```js
 {
-    onSuccess,
-    onError,
-    params: {
-        sub: '42l/Y1...', // идентификатор пользователя
-        projectName: 'y2dw...', // идентификатор проекта
-        device: { ... }, // информация об устройстве пользователя
-        app_info: { ... }, // информация о приложении
+    sub: *String,  // идентификатор пользователя
+    projectName: *String, // идентификатор проекта
+    device: { // информация об устройстве пользователя
+        surface: *String,  // название поверхности, например: "SBERBOX"
+        deviceId: *String,
+
+        platformType: String,
+        platformVersion: String,
+        surfaceVersion: String,
+        features: {
+            appTypes: String[],
+        },
+        capabilities: {
+            screen: {
+                available: Boolean,
+                height: Number,
+                width: Number,
+            },
+            speak: {
+                available: Boolean,
+            }
+        },
+        
+        deviceManufacturer: String,
+        deviceModel: String,
+        additionalInfo: {
+            host_app_id: String,
+            sdk_version: String,
+        }
+    }, 
+    app_info: {  // информация о приложении
+        projectId: *String,
+        applicationId: *String,
+
+        appversionId: String,
+        systemName: String,
+        frontendEndpoint: String,
+        frontendType: String,
+        ageLimit: Number,
+        affiliationType: String,
     }
 }
 ```
-
-Всю эту информацию необходимо получить c помощью ассистента;
-
-### Запуск баннера
-
-После инициализации показывающего кода, необходимо воспользоваться командой `runBanner()`, для показа видео-рекламы.
-
-```js
-runBanner({
-    onSuccess: () => {}, // Вызовется при закрытии баннера
-    onError: () => {}, // Вызовется в случае ошибки при показе баннера
-});
-```
-
-[Пример](./src/index.js) для запуска баннера расположен в данном репозитории.
-
-### Запуск видео-рекламы
-
-После инициализации показывающего кода, необходимо воспользоваться командой `runVideoAd()`, для показа видео-рекламы.
-
-```js
-runVideoAd({
-    onSuccess: () => {}, // Вызовется при переходе или при полном показе рекламы
-    onError: () => {}, // Вызовется во время ошибки при показе рекламы
-    mute: true, // Вызвать рекламу без звука
-});
-```
-
-[Пример](./src/index.js) для запуска рекламы также расположен в данном репозитории.
 
 ## Запуск демо проекта
 
