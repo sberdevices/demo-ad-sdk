@@ -6,42 +6,31 @@ const DEV_TOKEN = process.env.DEV_TOKEN;
 const DEV_PHRASE = process.env.DEV_PHRASE;
 
 document.addEventListener('DOMContentLoaded', () => {
+    initAdSdk();
+    initVideoAdButton();
+    initBannerButton();
+});
 
-    const testBtn = document.querySelector('.video-ad-btn');
-    testBtn.disabled = true;
+function initAdSdk() {
+    const videoAdBtn = document.querySelector('.video-ad-btn');
+    const bannerBtn = document.querySelector('.banner-ad-btn');
+    videoAdBtn.disabled = true;
+    bannerBtn.disabled = true;
 
     const onSuccess = () => {
         console.log('AdSdk Inited');
-        testBtn.disabled = false;
+        videoAdBtn.disabled = false;
+        bannerBtn.disabled = false;
     };
     const onError = (err) => {
-        console.error('AdSDK Error', err);
+        console.error('AdSDK Init Error', err);
     };
-
     if (IS_DEVELOPMENT) {
-        initDev({ token: DEV_TOKEN, initPhrase: DEV_PHRASE, onSuccess, onError });
+        initDev({ token: DEV_TOKEN, initPhrase: DEV_PHRASE, onSuccess, onError, test: true });
     } else {
-        init({ onSuccess, onError });
+        init({ onSuccess, onError, test: true });
     }
-
-    let i = 1;
-    const text = testBtn.textContent;
-
-    testBtn.addEventListener('click', () => {
-        const muteVideo = document.getElementById('mute-video-ad').checked;
-        runVideoAd({
-            mute: muteVideo,
-            onSuccess: () => {
-                console.log('Success');
-                testBtn.textContent = text + ': watched ' + i++;
-            },
-            onError,
-        });
-    });
-
-    initBannerButton();
-
-});
+}
 
 function initBannerButton() {
     const testBtn = document.querySelector('.banner-ad-btn');
@@ -49,10 +38,29 @@ function initBannerButton() {
     testBtn.addEventListener('click', () => {
         runBanner({
             onSuccess: () => {
-                console.log('Success');
+                console.log('Banner success');
             },
             onError: (err) => {
-                console.error('AdSDK Error', err);
+                console.error('Banner Error', err);
+            },
+        });
+    });
+}
+
+function initVideoAdButton() {
+    const testBtn = document.querySelector('.video-ad-btn');
+    let i = 1;
+    const text = testBtn.textContent;
+    testBtn.addEventListener('click', () => {
+        const muteVideo = document.getElementById('mute-video-ad').checked;
+        runVideoAd({
+            mute: muteVideo,
+            onSuccess: () => {
+                console.log('VideoAd success');
+                testBtn.textContent = text + ': watched ' + i++;
+            },
+            onError: () => {
+                console.error('VideoAd error', err);
             },
         });
     });
