@@ -9,11 +9,15 @@ assert.ok(process.env.DEV_PHRASE, 'Provide DEV_PHRASE');
 
 
 module.exports = {
-  entry: './src/index.js',
+  entry: {
+    baseInit: './src/index.js',
+    initWithAssistant: './src/initWithAssistant.js',
+    initWithParams: './src/initWithParams.js',
+  },
   mode: process.env.NODE_ENV === 'development' ? 'development' : 'production',
   output: {
     path: path.resolve(__dirname, 'public'),
-    filename: 'bundle.js',
+    filename: '[name].js',
   },
   plugins: [
     new webpack.DefinePlugin({
