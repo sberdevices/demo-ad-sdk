@@ -76,15 +76,14 @@ window.SberDevicesAdSDK.runVideoAd({
 
 `SberDevicesAdSDK` имеет несколько вариантов инициализации:
 
-Если вы не используете `assistantClient`:
+Если вы используете готовый webhook:
 * `window.SberDevicesAdSDK.init({ onSuccess, onError, test })` - Все параметры являются необязательными;
 
 Для запуска локально в браузере:
 * `window.SberDevicesAdSDK.initDev({ token, initPhrase, onSuccess, onError, test })`;
 
-Если вы используете `assistantClient`:
+Если вы используете `assistantClient` и пишите свой сценарий:
 * `window.SberDevicesAdSDK.initWithAssistant({assistant, onSuccess, onError}, test)`;
-* `window.SberDevicesAdSDK.initWithParams({params, onSuccess, onError}, test)`;
 
 Проверить завершилась ли инициализация можно вызвав:
 
@@ -151,15 +150,15 @@ if (IS_DEVELOPMENT) {
 
 
 ```js
-    import { createAssistant } from '@sberdevices/assistant-client';
+import { createAssistant } from '@sberdevices/assistant-client';
 
-    const assistant = createAssistant();
+const assistant = createAssistant();
 
-    initWithAssistant({
-        assistant,
-        onSuccess,
-        onError,
-    }, test );
+initWithAssistant({
+    assistant,
+    onSuccess,
+    onError,
+}, test );
 ```
 * `assistant` - инстанс ассистента.
 * `onSuccess` - необязательный параметр. Функция, будет вызвана при окончании инициализации.
@@ -182,79 +181,6 @@ const assistant = createSmartappDebugger();
 ```
 
 Пример использования метода `initWithAssistant` можно посмотреть в [Демо-проекте](./src/initWithAssistant.js)
-
-### window.SberDevicesAdSDK.initWithParams()
-
-Так же инициализировать SberDevicesAdSDK можно передав самостоятельно все необходимые параметры из `assistantClient`.
-
-```js
-    assistant.on('data', (command) => {
-        if (command.type === 'smart_app_data' && command.smart_app_data.type === 'sub') {
-            initWithParams({
-                params: command.smart_app_data.payload, 
-                onSuccess: () => {
-                    console.log('AdSdk Inited with params');
-                    testBtn.disabled = false;
-                },
-                onError, 
-            }, test);
-        }
-    });
-```
-
-* `params` - параметры для инициализации.
-* `onSuccess` - необязательный параметр. Функция, будет вызвана при окончании инициализации.
-* `onError` - необязательный параметр. Функция, будет вызвана, если при инициализации произойдет ошибка.
-* `test` - необязательный параметр. Если он равен `true`, то видео-реклама и баннеры будут выводиться тестовые, нужно для тестирования при разработке. У пользователей должен отсутствовать или равен `false`.
-
-
-Пример `params`, который ожидает метод `window.SberDevicesAdSDK.initWithParams()`.
-Обязательное отмечено `*`, но передавать лучше всё во избежание проблем в дальнейшем.
-```js
-{
-    sub: *String,  // идентификатор пользователя
-    projectName: *String, // идентификатор проекта
-    device: { // информация об устройстве пользователя
-        surface: *String,  // название поверхности, например: "SBERBOX"
-        deviceId: *String,
-
-        platformType: String,
-        platformVersion: String,
-        surfaceVersion: String,
-        features: {
-            appTypes: String[],
-        },
-        capabilities: {
-            screen: {
-                available: Boolean,
-                height: Number,
-                width: Number,
-            },
-            speak: {
-                available: Boolean,
-            }
-        },
-        
-        deviceManufacturer: String,
-        deviceModel: String,
-        additionalInfo: {
-            host_app_id: String,
-            sdk_version: String,
-        }
-    }, 
-    app_info: {  // информация о приложении
-        projectId: *String,
-        applicationId: *String,
-
-        appversionId: String,
-        systemName: String,
-        frontendEndpoint: String,
-        frontendType: String,
-        ageLimit: Number,
-        affiliationType: String,
-    }
-}
-```
 
 ## Запуск демо проекта
 

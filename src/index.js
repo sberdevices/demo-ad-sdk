@@ -59,7 +59,7 @@ function initVideoAdButton() {
                 console.log('VideoAd success');
                 testBtn.textContent = text + ': watched ' + i++;
             },
-            onError: () => {
+            onError: (err) => {
                 console.error('VideoAd error', err);
             },
         });

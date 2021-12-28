@@ -5,7 +5,7 @@
   "scripts": {
     "build": "NODE_ENV='production' node -r dotenv/config $(which webpack)",
     "build:dev": "NODE_ENV='development' node -r dotenv/config $(which webpack)",
-    "clean": "rm public/bundle.js",
+    "clean": "rm -f public/bundle.js",
     "predev": "npm run clean && npm run build:dev",
     "dev": "npx http-server",
     "start": "npx vercel dev"

@@ -1,7 +1,7 @@
 
 const { createAssistant, createSmartappDebugger } = window.assistant;
 
-const { initWithAssistant, runVideoAd } = window.SberDevicesAdSDK;
+const { initWithAssistant, runVideoAd, runBanner } = window.SberDevicesAdSDK;
 
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 const DEV_TOKEN = process.env.DEV_TOKEN;
@@ -9,53 +9,83 @@ const DEV_PHRASE = process.env.DEV_PHRASE;
 
 const assistantState = {};
 const initializeAssistant = () => {
-    if (!IS_DEVELOPMENT) {
+    if (IS_DEVELOPMENT) {
+        if (!DEV_TOKEN || !DEV_PHRASE) {
+            throw new Error('No token or phrase');
+        }
+
+        return createSmartappDebugger({
+            token: DEV_TOKEN,
+            initPhrase: DEV_PHRASE,
+            getState: () => assistantState,
+        });
+    } else {
         return createAssistant({
             getState: () => assistantState,
         });
     }
-
-    if (!DEV_TOKEN || !DEV_PHRASE) {
-        throw new Error('No token or phrase');
-    }
-
-    return createSmartappDebugger({
-        token: DEV_TOKEN,
-        initPhrase: DEV_PHRASE,
-        getState: () => assistantState,
-    });
 };
 
-
-
 document.addEventListener('DOMContentLoaded', () => {
+    initAdSdk();
+    initVideoAdButton();
+    initBannerButton();
+});
 
-    const testBtn = document.querySelector('.btn');
-    testBtn.disabled = true;
+function initAdSdk() {
+    const videoAdBtn = document.querySelector('.video-ad-btn');
+    const bannerBtn = document.querySelector('.banner-ad-btn');
+    videoAdBtn.disabled = true;
+    bannerBtn.disabled = true;
 
-    const onError = (err) => { console.error('AdSDK Error', err); };
+    const onSuccess = () => {
+        console.log('AdSdk Inited');
+        videoAdBtn.disabled = false;
+        bannerBtn.disabled = false;
+    };
+    const onError = (err) => {
+        console.error('AdSDK Init Error', err);
+    };
+
     const assistant = initializeAssistant();
-
     initWithAssistant({
         assistant,
-        onSuccess: () => {
-            console.log('AdSdk Inited with assistant');
-            testBtn.disabled = false;
-        },
+        onSuccess,
         onError, 
-    });
+    }, true);
+}
 
-    let i = 1;
-    const text = testBtn.textContent;
+function initBannerButton() {
+    const testBtn = document.querySelector('.banner-ad-btn');
 
     testBtn.addEventListener('click', () => {
-        runVideoAd({
+        runBanner({
             onSuccess: () => {
-                console.log('Success');
-                testBtn.textContent = text + ': watched ' + i++;
+                console.log('Banner success');
             },
-            onError,
+            onError: (err) => {
+                console.error('Banner Error', err);
+            },
         });
     });
+}
 
-});
+function initVideoAdButton() {
+    const testBtn = document.querySelector('.video-ad-btn');
+    let i = 1;
+    const text = testBtn.textContent;
+    testBtn.addEventListener('click', () => {
+        const muteVideo = document.getElementById('mute-video-ad').checked;
+        runVideoAd({
+            mute: muteVideo,
+            onSuccess: () => {
+                console.log('VideoAd success');
+                testBtn.textContent = text + ': watched ' + i++;
+            },
+            onError: (err) => {
+                console.error('VideoAd error', err);
+            },
+        });
+    });
+}
+
